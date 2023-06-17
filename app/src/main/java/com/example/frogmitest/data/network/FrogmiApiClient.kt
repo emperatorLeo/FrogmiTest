@@ -7,6 +7,6 @@ import retrofit2.http.Query
 
 interface FrogmiApiClient {
 
-    @GET("stores?per_page=10")
+    @GET("stores?per_page=15")
     suspend fun getAllPosts(@Query("page") page: Int): Response<FrogmiResponse>
 }

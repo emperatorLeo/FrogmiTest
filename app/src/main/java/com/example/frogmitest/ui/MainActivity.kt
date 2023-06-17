@@ -24,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +38,7 @@ import com.example.frogmitest.data.network.StoreService
 import com.example.frogmitest.ui.theme.FrogmiTestTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -116,13 +118,24 @@ fun Loader(modifier: Modifier) {
     )
 }
 
+/** solucion TEMPORAl para el guardar la posicion scroll**/
+internal var scrollPosition = 0
+
 @Composable
 fun ShowingList(list: List<Store>, viewModel: MainViewModel) {
-    val state = rememberLazyListState()
+    val state = rememberLazyListState(scrollPosition)
+    LaunchedEffect(state){
+        snapshotFlow {
+            state.firstVisibleItemIndex
+        }.collectLatest {
+            index -> scrollPosition = index
+        }
+    }
+
     LazyColumn(
+        state = state,
         modifier = Modifier
-            .fillMaxSize(),
-        state = state
+            .fillMaxSize()
     ) {
         items(list) { store -> ListItem(store = store) }
         item {
