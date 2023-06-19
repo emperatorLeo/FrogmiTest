@@ -17,6 +17,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     private const val authorization = "INSERT HERE AUTHORIZATION TOKEN"
+    private const val XCompanyUuid = "INSERT HERE X-COMPANY-UuID"
 
     @Singleton
     @Provides
@@ -30,7 +31,7 @@ object NetworkModule {
             .addInterceptor(Interceptor { chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("Authorization", authorization)
-                    .addHeader("X-Company-Uuid", "b7fa583e-a144-4ec2-9464-e1e514512fb4")
+                    .addHeader("X-Company-Uuid", XCompanyUuid)
                     .build()
                 chain.proceed(request)
             }).build()
