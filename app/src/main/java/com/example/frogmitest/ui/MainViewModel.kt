@@ -20,7 +20,7 @@ import retrofit2.Response
 class MainViewModel @Inject constructor(private val stores: GetStoresUseCase) : ViewModel() {
     var composeUiState by mutableStateOf<UiState>(UiState.Loading(true))
         private set
-    private var page:Int? = 1
+    private var page: Int? = 1
 
     private val currentData = mutableListOf<Store>()
 
@@ -32,31 +32,10 @@ class MainViewModel @Inject constructor(private val stores: GetStoresUseCase) : 
                 if (response.isSuccessful) {
                     successResponse(response)
                 } else {
-                    when (response.code()) {
-                        in 400..499 -> {
-                            composeUiState = UiState.Error.BadRequestError
-                        }
-
-                        in 500..Int.MAX_VALUE -> {
-                            composeUiState = UiState.Loading(true)
-                            try {
-                                retry(1) {
-                                    val response2 = stores(page!!)
-                                    successResponse(response2)
-                                }
-                            } catch (e: Exception) {
-                                composeUiState = UiState.Loading(false)
-                                composeUiState = UiState.Error.ServerError
-                            }
-                        }
-
-                        else -> {
-                            composeUiState = UiState.Error.ConnectionError
-                        }
-                    }
+                    errorResponse(response.code())
                 }
             }
-        }else {
+        } else {
             composeUiState = UiState.ReachLimit
         }
     }
@@ -67,10 +46,36 @@ class MainViewModel @Inject constructor(private val stores: GetStoresUseCase) : 
         if (next != null) {
             page = next.getNextPage()
             currentData.addAll(mapToStore(data))
-        }else page = null
+        } else page = null
 
         composeUiState = UiState.Loading(false)
         composeUiState = UiState.Success(currentData)
+    }
+
+    private fun errorResponse(code: Int) {
+        when (code) {
+            in 400..499 -> {
+                composeUiState = UiState.Error.BadRequestError
+            }
+
+            in 500..Int.MAX_VALUE -> {
+                composeUiState = UiState.Loading(true)
+                viewModelScope.launch {
+                    try {
+                        retry(1) {
+                            val response2 = stores(page!!)
+                            successResponse(response2)
+                        }
+                    } catch (e: Exception) {
+                        composeUiState = UiState.Loading(false)
+                        composeUiState = UiState.Error.ServerError
+                    }
+                }
+            }
+            else -> {
+                composeUiState = UiState.Error.ConnectionError
+            }
+        }
     }
 
 }

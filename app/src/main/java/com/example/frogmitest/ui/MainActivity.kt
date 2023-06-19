@@ -102,7 +102,7 @@ fun RenderAppStates(viewModel: MainViewModel, context: Context) {
             }
 
             UiState.ReachLimit -> {
-                Toast.makeText(context,"You reach the limit!",Toast.LENGTH_LONG).show()
+                Toast.makeText(context,R.string.limit_reached_message,Toast.LENGTH_LONG).show()
             }
 
         }
@@ -118,7 +118,7 @@ fun Loader(modifier: Modifier) {
     )
 }
 
-/** solucion TEMPORAl para el guardar la posicion scroll**/
+/** solucion TEMPORAl para guardar la posicion del scroll**/
 internal var scrollPosition = 0
 
 @Composable
