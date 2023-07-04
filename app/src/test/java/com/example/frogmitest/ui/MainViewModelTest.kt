@@ -61,7 +61,7 @@ internal class MainViewModelTest {
                 Store("name3", "code3", "fullAddress3")
             )
 
-            assert(mainViewModel.composeUiState == UiState.Success(mutableStoreList))
+            assert(mainViewModel.storeList.value == mutableStoreList)
         }
 
     @Test

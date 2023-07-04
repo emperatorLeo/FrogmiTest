@@ -3,6 +3,8 @@ package com.example.frogmitest.ui
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.frogmitest.core.Store
@@ -22,7 +24,8 @@ class MainViewModel @Inject constructor(private val stores: GetStoresUseCase) : 
         private set
     private var page: Int? = 1
 
-    private val currentData = mutableListOf<Store>()
+    private val _storeList = MutableLiveData<ArrayList<Store>>(arrayListOf())
+    val storeList: LiveData<ArrayList<Store>> = _storeList
 
     fun getStores() {
         if (page != null) {
@@ -45,11 +48,10 @@ class MainViewModel @Inject constructor(private val stores: GetStoresUseCase) : 
         val next = response.body()?.links?.next
         if (next != null) {
             page = next.getNextPage()
-            currentData.addAll(mapToStore(data))
+            _storeList.value!!.addAll(mapToStore(data))
         } else page = null
 
         composeUiState = UiState.Loading(false)
-        composeUiState = UiState.Success(currentData)
     }
 
     private fun errorResponse(code: Int) {

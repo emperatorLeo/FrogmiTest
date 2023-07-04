@@ -2,6 +2,7 @@ package com.example.frogmitest.ui
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,7 +25,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,22 +36,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.frogmitest.R
 import com.example.frogmitest.core.Store
-import com.example.frogmitest.data.network.StoreService
 import com.example.frogmitest.ui.theme.FrogmiTestTheme
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject
-    lateinit var service: StoreService
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             FrogmiTestTheme {
+                Log.d("Leo","FrogmiTestTheme")
                 Surface(
                     color = Color.White,
                     modifier = Modifier.fillMaxSize()
@@ -58,20 +56,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        viewModel.getStores()
     }
 
 }
 
 @Composable
 fun RenderAppStates(viewModel: MainViewModel, context: Context) {
+    val storeList: List<Store> by viewModel
+        .storeList
+        .observeAsState(listOf())
+
     Box(modifier = Modifier.fillMaxSize()) {
+        ShowingList(list = storeList, viewModel)
 
         when (val state = viewModel.composeUiState) {
-            is UiState.Success -> {
-                val list = (state).data
-                ShowingList(list = list, viewModel)
-            }
+            is UiState.Success -> {}
 
             is UiState.Loading -> {
                 val visible = (state).isVisible
@@ -118,28 +117,17 @@ fun Loader(modifier: Modifier) {
     )
 }
 
-/** solucion TEMPORAl para guardar la posicion del scroll**/
-internal var scrollPosition = 0
-
 @Composable
-fun ShowingList(list: List<Store>, viewModel: MainViewModel) {
-    val state = rememberLazyListState(scrollPosition)
-    LaunchedEffect(state){
-        snapshotFlow {
-            state.firstVisibleItemIndex
-        }.collectLatest {
-            index -> scrollPosition = index
-        }
-    }
-
+fun ShowingList(list: List<Store>?, viewModel: MainViewModel) {
+    val state = rememberLazyListState()
     LazyColumn(
         state = state,
         modifier = Modifier
             .fillMaxSize()
     ) {
-        items(list) { store -> ListItem(store = store) }
+        items(list!!) { store -> ListItem(store = store) }
         item {
-            LaunchedEffect(true) {
+            LaunchedEffect(false) {
                 viewModel.getStores()
             }
         }
