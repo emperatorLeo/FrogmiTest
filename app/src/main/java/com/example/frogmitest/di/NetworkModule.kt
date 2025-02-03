@@ -16,8 +16,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    private const val authorization = "INSERT HERE AUTHORIZATION TOKEN"
-    private const val XCompanyUuid = "INSERT HERE X-COMPANY-UuID"
+    private const val authorization = "Bearer bc27271a27527aaf6126c781dd17e7dd"
+    private const val XCompanyUuid = "b7fa583e-a144-4ec2-9464-e1e514512fb4"
 
     @Singleton
     @Provides
